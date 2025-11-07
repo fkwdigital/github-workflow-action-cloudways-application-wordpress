@@ -1,0 +1,48 @@
+name: "Enhanced SSH Deploy (Cloudways-friendly)"
+description: "Deploy via rsync over SSH with enforced excludes, public/ publishing, and FOLDER_NAME support."
+author: "Your Name <you@example.com>"
+runs:
+  using: "node20"
+  main: "dist/index.js"
+
+inputs:
+  SSH_PRIVATE_KEY:
+    description: "Private key contents (paste secret)"
+    required: true
+  REMOTE_HOST:
+    description: "Destination host (Cloudways server IP)"
+    required: true
+  REMOTE_USER:
+    description: "SSH username (Cloudways master user)"
+    required: true
+  REMOTE_PORT:
+    description: "SSH port"
+    default: "22"
+  TARGET:
+    description: "Absolute remote path. If omitted, TARGET_BASE + [/FOLDER_NAME] will be used."
+    required: false
+  TARGET_BASE:
+    description: "Absolute base path on remote (e.g. /home/master/applications/APPID/public_html)"
+    required: false
+  FOLDER_NAME:
+    description: "Optional folder to append to TARGET_BASE (so you do not need to pass TARGET)"
+    required: false
+  SOURCE:
+    description: "Relative local source. Defaults to public/ (contents)."
+    default: "public/"
+  RSYNC_ARGS:
+    description: "Rsync args (space separated)."
+    default: "-azvr --inplace --exclude='.*' --no-perms --no-times"
+  ARGS:
+    description: "(Alias) Same as RSYNC_ARGS, to match cloudways-lab action naming."
+    required: false
+  EXCLUDE_FILE:
+    description: "Optional path to an rsync --exclude-from file (e.g., ./public/exclude.txt)"
+    required: false
+  EXTRA_EXCLUDE:
+    description: "Comma-separated extra exclude patterns appended to the built-in list."
+    required: false
+
+branding:
+  icon: "upload-cloud"
+  color: "blue"

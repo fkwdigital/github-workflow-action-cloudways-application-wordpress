@@ -1,0 +1,22 @@
+name: Deploy Public Folder to Remote public_html Folder
+on:
+  push:
+    branches: [main]
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Deploy Public Folder to Remote public_html Folder
+        uses: fkwdigital/github-workflow-action-cloudways-application-wordpress@v1
+        with:
+          SSH_PRIVATE_KEY: SSHKEY
+          REMOTE_HOST: REMOTEHOST
+          REMOTE_USER: REMOTEUSE
+          REMOTE_PORT: 22
+          ARGS: "-azvr --inplace --exclude='.*' --no-perms --no-times --exclude-from='./public/exclude.txt' --delete-after"
+          SOURCE: "./public/"
+          EXCLUDE_FILE: "./public/exclude.txt"
+          FOLDER_NAME: FOLDERNAME
