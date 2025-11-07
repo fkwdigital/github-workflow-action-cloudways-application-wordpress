@@ -10,15 +10,20 @@
   },
   "license": "MIT",
   "author": "Chris Gleason <chris@fkwdigital.com>",
-  "scripts": {
-    "build": "ncc build src/index.js -o dist --source-map",
-    "check": "node -e \"console.log('node', process.version)\""
-  },
   "dependencies": {
-    "command-exists": "^1.2.9",
-    "rsyncwrapper": "^3.0.1"
+    "command-exists": "1.2.9",
+    "node-cmd": "4.0.0",
+    "rsyncwrapper": "3.0.1"
   },
   "devDependencies": {
-    "@vercel/ncc": "^0.38.1"
+    "@vercel/ncc": "^0.38.4",
+    "eslint": "^7.27.0",
+    "eslint-config-airbnb-base": "^14.2.1",
+    "eslint-plugin-import": "^2.23.3"
+  },
+  "scripts": {
+    "build": "npm run lint && ncc build ./src/index.js -o dist -m",
+    "lint": "eslint ./src/index.js",
+    "lint:fix": "eslint ./src/index.js --fix"
   }
 }

@@ -1,4 +1,5 @@
 const { existsSync, mkdirSync, writeFileSync } = require('fs');
+
 const { GITHUB_WORKSPACE } = process.env;
 
 const validateDir = (dir) => {

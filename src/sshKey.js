@@ -15,7 +15,7 @@ const addSshKey = (key, name) => {
   try {
     writeFileSync(filePath, key, {
       encoding: 'utf8',
-      mode: 0o600,
+      mode: 0o600
     });
   } catch (e) {
     console.error('⚠️ writeFileSync error', filePath, e.message);
@@ -28,5 +28,5 @@ const addSshKey = (key, name) => {
 };
 
 module.exports = {
-  addSshKey,
+  addSshKey
 };
