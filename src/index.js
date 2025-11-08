@@ -110,6 +110,7 @@ async function main() {
       }
       console.log('✅ [rsync] completed');
       if (stdout) console.log(stdout);
+      process.exit(0);
     }
   );
 }
