@@ -1,6 +1,6 @@
 {
   "name": "github-workflow-action-cloudways-application-wordpress",
-  "version": "1.2.0",
+  "version": "1.2.1",
   "private": true,
   "description": "Deploy via rsync over SSH with enforced excludes, public/ publishing, and FOLDER_NAME support.",
   "main": "dist/index.js",
@@ -15,7 +15,6 @@
   "author": "Chris Gleason <chris@fkwdigital.com>",
   "dependencies": {
     "command-exists": "1.2.9",
-    "node-cmd": "4.0.0",
     "rsyncwrapper": "3.0.1"
   },
   "devDependencies": {
