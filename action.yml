@@ -1,8 +1,8 @@
 name: "Enhanced SSH Deploy (Cloudways-friendly)"
 description: "Deploy via rsync over SSH with enforced excludes, public/ publishing, and FOLDER_NAME support."
-author: "Your Name <you@example.com>"
+author: "FKW Digital <hello@fkwdigital.com>"
 runs:
-  using: "node20"
+  using: "node24"
   main: "dist/index.js"
 
 inputs:
@@ -33,6 +33,9 @@ inputs:
   RSYNC_ARGS:
     description: "Rsync args (space separated)."
     default: "-azvr --inplace --exclude='.*' --no-perms --no-times"
+  SSH_PASSPHRASE:
+    description: "Passphrase for the SSH private key (required by some managed hosts)"
+    required: false
   ARGS:
     description: "(Alias) Same as RSYNC_ARGS, to match cloudways-lab action naming."
     required: false
@@ -42,6 +45,21 @@ inputs:
   EXTRA_EXCLUDE:
     description: "Comma-separated extra exclude patterns appended to the built-in list."
     required: false
+  CLOUDWAYS_API_TOKEN:
+    description: "Optional Cloudways API access token. When set, application permissions are reset after deploy."
+    required: false
+  CLOUDWAYS_SERVER_ID:
+    description: "Cloudways server ID (required when CLOUDWAYS_API_TOKEN is set)"
+    required: false
+  CLOUDWAYS_APP_ID:
+    description: "Cloudways application ID (required when CLOUDWAYS_API_TOKEN is set)"
+    required: false
+  RESET_PERMISSIONS_OWNERSHIP:
+    description: "Optional ownership for the permission reset: master_user or sys_user. Omitted uses Cloudways default."
+    required: false
+  CLOUDWAYS_API_URL:
+    description: "Cloudways API base URL"
+    default: "https://api.cloudways.com/api/v1"
 
 branding:
   icon: "upload-cloud"

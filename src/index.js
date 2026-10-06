@@ -1,12 +1,13 @@
 const path = require('path');
 const fs = require('fs');
 const os = require('os');
-const { exec } = require('child_process');
+const { exec, spawn } = require('child_process');
 const rsync = require('rsyncwrapper');
 const { sync: commandExists } = require('command-exists');
 
 const { getInputs, computeDest, assertRequired } = require('./inputs');
 const { ALWAYS_EXCLUDE } = require('./excludes');
+const { resetPermissions } = require('./cloudways');
 
 function ensureRsync() {
   return new Promise((resolve, reject) => {
@@ -19,6 +20,33 @@ function ensureRsync() {
         reject(new Error(`rsync install failed: ${err.message}`));
         return;
       }
+      resolve();
+    });
+  });
+}
+
+/**
+ * Strip the passphrase from a private key file in-place so rsync can use it
+ * directly with -i. Uses spawn to avoid shell injection with special characters.
+ *
+ * @since 1.1.0
+ * @param {string} keyPath    - absolute path to the private key file
+ * @param {string} passphrase - current passphrase protecting the key
+ * @returns {Promise<void>}
+ */
+function removePassphrase(keyPath, passphrase) {
+  return new Promise((resolve, reject) => {
+    const proc = spawn('ssh-keygen', ['-p', '-P', passphrase, '-N', '', '-f', keyPath]);
+    let stderr = '';
+    proc.stderr.on('data', (d) => {
+      stderr += d.toString();
+    });
+    proc.on('close', (code) => {
+      if (code !== 0) {
+        reject(new Error(`ssh-keygen failed (exit ${code}): ${stderr}`));
+        return;
+      }
+      console.log('[SSH] Key unlocked for deployment');
       resolve();
     });
   });
@@ -57,6 +85,27 @@ function addSshKey(key, name) {
   return filePath;
 }
 
+/**
+ * Run optional Cloudways API steps after a successful rsync. Skipped when no access token is set.
+ *
+ * @since 1.2.0
+ * @param {object} cfg - parsed action inputs
+ * @returns {Promise<void>}
+ */
+async function runPostDeploy(cfg) {
+  if (!cfg.apiToken) return;
+
+  console.log(`[cloudways] Resetting permissions for app ${cfg.appId} on server ${cfg.serverId}`);
+  await resetPermissions({
+    token: cfg.apiToken,
+    serverId: cfg.serverId,
+    appId: cfg.appId,
+    ownership: cfg.permissionsOwnership,
+    apiUrl: cfg.apiUrl
+  });
+  console.log('✅ [cloudways] Permissions reset');
+}
+
 async function main() {
   const cfg = getInputs();
   assertRequired(cfg);
@@ -86,6 +135,10 @@ async function main() {
   validateDir(path.join(home, '.ssh'));
   validateFile(path.join(home, '.ssh', 'known_hosts'));
 
+  if (cfg.passphrase) {
+    await removePassphrase(keyPath, cfg.passphrase);
+  }
+
   await ensureRsync();
 
   rsync(
@@ -110,7 +163,12 @@ async function main() {
       }
       console.log('✅ [rsync] completed');
       if (stdout) console.log(stdout);
-      process.exit(0);
+      runPostDeploy(cfg)
+        .then(() => process.exit(0))
+        .catch((e) => {
+          console.error('⚠️  [cloudways] error:', e.message);
+          process.exit(1);
+        });
     }
   );
 }

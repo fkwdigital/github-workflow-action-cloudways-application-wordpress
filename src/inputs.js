@@ -1,4 +1,5 @@
 const path = require('path');
+const { DEFAULT_API_URL } = require('./cloudways');
 
 const DEFAULT_ARGS = "-azvr --inplace --exclude='.*' --no-perms --no-times";
 const DEFAULT_SOURCE = 'public/';
@@ -19,6 +20,7 @@ function getInputs() {
     user: fromEnv('REMOTE_USER'),
     port: fromEnv('REMOTE_PORT', '22'),
     key: fromEnv('SSH_PRIVATE_KEY'),
+    passphrase: fromEnv('SSH_PASSPHRASE', ''),
     keyName: fromEnv('DEPLOY_KEY_NAME', 'deploy_key'),
     target: fromEnv('TARGET', ''),
     targetBase: fromEnv('TARGET_BASE', ''),
@@ -26,7 +28,12 @@ function getInputs() {
     source: fromEnv('SOURCE', DEFAULT_SOURCE),
     rsyncArgs: fromEnv('ARGS') || fromEnv('RSYNC_ARGS', DEFAULT_ARGS),
     excludeFile: fromEnv('EXCLUDE_FILE', ''),
-    extraExclude: fromEnv('EXTRA_EXCLUDE', '')
+    extraExclude: fromEnv('EXTRA_EXCLUDE', ''),
+    apiToken: fromEnv('CLOUDWAYS_API_TOKEN', ''),
+    apiUrl: fromEnv('CLOUDWAYS_API_URL', DEFAULT_API_URL),
+    serverId: fromEnv('CLOUDWAYS_SERVER_ID', ''),
+    appId: fromEnv('CLOUDWAYS_APP_ID', ''),
+    permissionsOwnership: fromEnv('RESET_PERMISSIONS_OWNERSHIP', '')
   };
 }
 
@@ -52,6 +59,8 @@ function assertRequired(cfg) {
   if (!cfg.host) missing.push('REMOTE_HOST');
   if (!cfg.user) missing.push('REMOTE_USER');
   if (!cfg.key) missing.push('SSH_PRIVATE_KEY');
+  if (cfg.apiToken && !cfg.serverId) missing.push('CLOUDWAYS_SERVER_ID');
+  if (cfg.apiToken && !cfg.appId) missing.push('CLOUDWAYS_APP_ID');
   if (missing.length) {
     throw new Error(`Missing required inputs: ${missing.join(', ')}`);
   }
