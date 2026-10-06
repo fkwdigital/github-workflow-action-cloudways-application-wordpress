@@ -3,9 +3,13 @@ const path = require('path');
 const { getInputs, computeDest, assertRequired } = require('./inputs');
 const { ALWAYS_EXCLUDE } = require('./excludes');
 const { readExcludeFile, splitList, splitArgsPreserveQuotes } = require('./helpers');
-const { addSshKey, removePassphrase } = require('./sshKey');
+const { addSshKey, removeSshKey, configureKnownHosts, hostKeyArgs, removePassphrase } = require('./sshKey');
 const { ensureRsync, runRsync } = require('./rsyncCli');
 const { resetPermissions } = require('./cloudways');
+
+// path to the written key file — set in main(), removed on exit
+let deployKeyPath = null;
+process.on('exit', () => removeSshKey(deployKeyPath));
 
 /**
  * Run optional Cloudways API steps after a successful rsync. Skipped when no access token is set.
@@ -51,6 +55,9 @@ async function main() {
   console.log(`[deploy] Excludes → ${excludes.length}`);
 
   const keyPath = addSshKey(cfg.key, cfg.keyName);
+  deployKeyPath = keyPath;
+  const strictHostKeys = configureKnownHosts(cfg.knownHosts);
+
   if (cfg.passphrase) {
     await removePassphrase(keyPath, cfg.passphrase);
   }
@@ -63,7 +70,8 @@ async function main() {
     args: splitArgsPreserveQuotes(cfg.rsyncArgs),
     privateKey: keyPath,
     port: cfg.port,
-    excludes
+    excludes,
+    sshArgs: hostKeyArgs(strictHostKeys)
   });
   console.log('✅ [rsync] completed');
   if (stdout) console.log(stdout);

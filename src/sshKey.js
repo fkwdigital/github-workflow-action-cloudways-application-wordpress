@@ -28,6 +28,70 @@ function addSshKey(key, name = 'deploy_key', home = process.env.HOME || os.homed
 }
 
 /**
+ * Delete a private key file, ignoring a key that is already gone.
+ *
+ * @since 1.3.0
+ * @param {string|null} filePath - absolute path to the key file
+ * @returns {void}
+ */
+function removeSshKey(filePath) {
+  if (!filePath) return;
+  try {
+    fs.unlinkSync(filePath);
+  } catch (e) {
+    // already gone
+  }
+}
+
+/**
+ * Append known_hosts lines to ~/.ssh/known_hosts so ssh can verify the remote host fingerprint.
+ *
+ * @since 1.3.0
+ * @param {string} knownHosts - raw known_hosts lines, e.g. from ssh-keyscan -H <host>
+ * @param {string} [home]     - home directory to use
+ * @returns {void}
+ */
+function writeKnownHosts(knownHosts, home = process.env.HOME || os.homedir()) {
+  const sshDir = path.join(home, '.ssh');
+  validateDir(sshDir);
+  const entry = `${knownHosts.replace(/\r\n?/g, '\n').trim()}\n`;
+  fs.appendFileSync(path.join(sshDir, 'known_hosts'), entry, { encoding: 'utf8', mode: 0o600 });
+  console.log('[SSH] known_hosts written — strict host key verification enabled');
+}
+
+/**
+ * Write known_hosts when provided, otherwise warn that host key verification is off.
+ *
+ * @since 1.3.0
+ * @param {string} knownHosts - raw known_hosts lines, may be empty
+ * @param {string} [home]     - home directory to use
+ * @returns {boolean} true when strict host key checking can be enabled
+ */
+function configureKnownHosts(knownHosts, home = process.env.HOME || os.homedir()) {
+  if (knownHosts) {
+    writeKnownHosts(knownHosts, home);
+    return true;
+  }
+
+  console.warn(
+    '⚠️  [SSH] KNOWN_HOSTS is not set — host key verification is disabled.'
+      + ' Set KNOWN_HOSTS (via ssh-keyscan -H [-p <port>] <host>) to protect against MITM attacks.'
+  );
+  return false;
+}
+
+/**
+ * Build the ssh option arguments for host key checking.
+ *
+ * @since 1.3.0
+ * @param {boolean} strict - whether to require a known host key
+ * @returns {string[]}
+ */
+function hostKeyArgs(strict) {
+  return ['-o', `StrictHostKeyChecking=${strict ? 'yes' : 'no'}`];
+}
+
+/**
  * Strip the passphrase from a private key file in-place so rsync can use it
  * directly with -i. Uses spawn to avoid shell injection with special characters.
  *
@@ -57,5 +121,9 @@ function removePassphrase(keyPath, passphrase) {
 
 module.exports = {
   addSshKey,
+  removeSshKey,
+  writeKnownHosts,
+  configureKnownHosts,
+  hostKeyArgs,
   removePassphrase
 };

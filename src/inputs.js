@@ -4,16 +4,38 @@ const { DEFAULT_API_URL } = require('./cloudways');
 const DEFAULT_ARGS = "-azvr --inplace --exclude='.*' --no-perms --no-times";
 const DEFAULT_SOURCE = 'public/';
 
+/**
+ * Read an input value from the environment.
+ * Looks for the bare key first, then `INPUT_<key>` (the convention GitHub Actions uses).
+ *
+ * @since 1.0.0
+ * @param {string} key        - environment variable name
+ * @param {string} [fallback] - value to return if the key is unset or empty
+ * @returns {string}
+ */
 function fromEnv(key, fallback = '') {
   const has = Object.prototype.hasOwnProperty.call(process.env, key);
   const v = has ? process.env[key] : process.env[`INPUT_${key}`];
   return v === undefined || v === null || v === '' ? fallback : v;
 }
 
+/**
+ * Append a trailing slash to a path if it does not already have one.
+ *
+ * @since 1.0.0
+ * @param {string} p - path
+ * @returns {string}
+ */
 function ensureSlash(p) {
   return p.endsWith('/') ? p : `${p}/`;
 }
 
+/**
+ * Build the configuration object from action inputs.
+ *
+ * @since 1.0.0
+ * @returns {object}
+ */
 function getInputs() {
   return {
     host: fromEnv('REMOTE_HOST'),
@@ -21,6 +43,7 @@ function getInputs() {
     port: fromEnv('REMOTE_PORT', '22'),
     key: fromEnv('SSH_PRIVATE_KEY'),
     passphrase: fromEnv('SSH_PASSPHRASE', ''),
+    knownHosts: fromEnv('KNOWN_HOSTS', ''),
     keyName: fromEnv('DEPLOY_KEY_NAME', 'deploy_key'),
     target: fromEnv('TARGET', ''),
     targetBase: fromEnv('TARGET_BASE', ''),
@@ -37,6 +60,13 @@ function getInputs() {
   };
 }
 
+/**
+ * Resolve the remote destination path from TARGET, TARGET_BASE and FOLDER_NAME.
+ *
+ * @since 1.0.0
+ * @param {object} cfg - configuration object from getInputs()
+ * @returns {string} remote path with a trailing slash
+ */
 function computeDest(cfg) {
   if (cfg.target) return ensureSlash(cfg.target);
 
@@ -54,6 +84,13 @@ function computeDest(cfg) {
   return ensureSlash(`/home/${cfg.user}/`);
 }
 
+/**
+ * Validate required inputs. Throws if anything required is missing.
+ *
+ * @since 1.0.0
+ * @param {object} cfg - configuration object from getInputs()
+ * @returns {void}
+ */
 function assertRequired(cfg) {
   const missing = [];
   if (!cfg.host) missing.push('REMOTE_HOST');

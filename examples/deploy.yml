@@ -13,6 +13,7 @@ jobs:
         uses: fkwdigital/github-workflow-action-cloudways-application-wordpress@v1
         with:
           SSH_PRIVATE_KEY: SSHKEY
+          KNOWN_HOSTS: KNOWNHOSTS
           REMOTE_HOST: REMOTEHOST
           REMOTE_USER: REMOTEUSE
           REMOTE_PORT: 22

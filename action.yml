@@ -36,6 +36,9 @@ inputs:
   SSH_PASSPHRASE:
     description: "Passphrase for the SSH private key (required by some managed hosts)"
     required: false
+  KNOWN_HOSTS:
+    description: "Contents of ~/.ssh/known_hosts for the server. Obtain via: ssh-keyscan -H your-host. Strongly recommended — omitting disables host key verification."
+    required: false
   ARGS:
     description: "(Alias) Same as RSYNC_ARGS, to match cloudways-lab action naming."
     required: false

@@ -28,6 +28,7 @@ One of these combinations must be specified.
 
 ### Optional
 
+- `KNOWN_HOSTS` - Known hosts entry for the server. Strongly recommended — omitting disables host key verification. See [KNOWN_HOSTS](#known_hosts) below.
 - `SSH_PASSPHRASE` - Passphrase for the SSH private key (required by some managed hosts)
 - `REMOTE_PORT` (defaults to 22)
 - `SOURCE` (defaults to `public/`)
@@ -39,6 +40,31 @@ One of these combinations must be specified.
 - `CLOUDWAYS_APP_ID` (required when `CLOUDWAYS_API_TOKEN` is set)
 - `RESET_PERMISSIONS_OWNERSHIP` (`master_user` or `sys_user`; omit to use the Cloudways default)
 - `CLOUDWAYS_API_URL` (defaults to `https://api.cloudways.com/api/v1`)
+
+## KNOWN_HOSTS
+
+Without a `KNOWN_HOSTS` value the action connects with `StrictHostKeyChecking=no`, which disables host key verification and leaves the deploy vulnerable to MITM attacks. Setting this input enables `StrictHostKeyChecking=yes`.
+
+**Get the value from your server (run this once locally):**
+
+```bash
+ssh-keyscan -H your-server-public-ip
+```
+
+Copy the output and store it as a GitHub secret, then pass it to the action:
+
+```yaml
+- name: Deploy to Cloudways
+  uses: fkwdigital/github-workflow-action-cloudways-application-wordpress@v1
+  with:
+    SSH_PRIVATE_KEY: ${{ secrets.SSH_PRIVATE_KEY }}
+    KNOWN_HOSTS: ${{ secrets.KNOWN_HOSTS }}
+    REMOTE_HOST: ${{ secrets.REMOTE_HOST }}
+    REMOTE_USER: ${{ secrets.REMOTE_USER }}
+    FOLDER_NAME: ${{ secrets.FOLDER_NAME }}
+```
+
+The private key file is deleted from the runner when the action exits.
 
 ## Reset Permissions via Cloudways API (Optional)
 
@@ -358,7 +384,7 @@ Verify your `TARGET`, `TARGET_BASE`, and/or `FOLDER_NAME` is correct. `FOLDER_NA
 
 ## License
 
-MIT
+GPL-3.0-or-later. See [LICENSE](LICENSE).
 
 ## Support
 

@@ -1,6 +1,6 @@
 {
   "name": "github-workflow-action-cloudways-application-wordpress",
-  "version": "1.2.1",
+  "version": "1.3.0",
   "private": true,
   "description": "Deploy via rsync over SSH with enforced excludes, public/ publishing, and FOLDER_NAME support.",
   "main": "dist/index.js",
@@ -11,7 +11,7 @@
     "type": "git",
     "url": "https://github.com/fkwdigital/github-workflow-action-cloudways-application-wordpress.git"
   },
-  "license": "MIT",
+  "license": "GPL-3.0-or-later",
   "author": "Chris Gleason <chris@fkwdigital.com>",
   "dependencies": {
     "command-exists": "1.2.9",
