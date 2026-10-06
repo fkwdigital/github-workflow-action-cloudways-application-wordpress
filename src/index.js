@@ -158,7 +158,7 @@ async function main() {
         console.error('⚠️  [rsync] error:', error.message);
         console.error('stderr:', stderr || '');
         console.error('cmd:', cmd || '');
-        process.abort();
+        process.exit(1);
         return;
       }
       console.log('✅ [rsync] completed');

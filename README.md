@@ -102,7 +102,8 @@ notice.
 
 ## Usage
 
-See example in `.github/workflows/deploy.yml` and in this doc.
+See example in `examples/deploy.yml` and in this doc. Copy it into `.github/workflows/` of the repository you
+deploy from, not this action's repository.
 
 ## Default Excludes
 
